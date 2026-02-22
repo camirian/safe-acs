@@ -1,0 +1,9 @@
+# Requirements Traceability Matrix (RTM)
+
+| Req ID | Stakeholder Requirement                                                                     | Derived System Requirement                                                                      | Verification Method                  | Status  |
+| :----- | :------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------- | :----------------------------------- | :------ |
+| SR-101 | System must never exceed hardware thermal or kinetic limits regardless of AI command.       | Edge node shall check all LLM RPM commands against SysML constraints (`< 6000 RPM`).            | Automated Property-Based Test        | Defined |
+| SR-102 | Reversible software actions may be autonomous; Irreversible actions require humans.         | System router shall classify outputs. Type 1 mandates Flight Operator UI approval loop.         | Software Review / Integration Test   | Defined |
+| SR-103 | End-to-end telemetry and prompt histories must be immutable for certification audits.       | A DR-AIS logging framework shall record state, prompt, response, and action synchronously.      | Architecture Review / Log Inspection | Defined |
+| SR-104 | The AI framework shall be deployed locally on resource-constrained hardware.                | The API Gateway and Deterministic Guardrails shall execute natively on NVIDIA Jetson Orin Nano. | Hardware In-the-Loop Validation      | Defined |
+| SR-105 | Cloud-based cognitive inference must not degrade primary system control control loop rates. | Cloud API calls shall execute asynchronously with a strict 3000ms max timeout.                  | Fault Injection / Latency Profiling  | Defined |

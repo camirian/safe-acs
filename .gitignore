@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+.venv/
+venv/
+
+# Streamlit
+.streamlit/
+
+# NVIDIA Jetson / Edge Compute
+*.engine
+*.plan
+*.trt
+.nv/
+
+# Anthropic / Evaluations
+anthropic_logs/
+eval_results/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
