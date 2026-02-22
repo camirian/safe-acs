@@ -7,20 +7,18 @@ The Cyber-Physical AI Assurance Framework (SafeACS) integrates Anthropic's steer
 
 ### Context Level
 ```mermaid
-flowchart TD
-    subgraph External
-        operator(("Flight Operator / Verifier\n[Person]"))
-        satellite_acs["Satellite ACS (Sim)\n[Software System]"]
-        claude_api["Claude API\n[Software System]"]
-    end
+flowchart LR
+    operator(("Flight Operator / Verifier\n[Person]"))
+    satellite_acs["Satellite ACS (Sim)\n[Software System]"]
+    claude_api["Claude API\n[Software System]"]
     
     safeacs("SafeACS AI Assurance Framework\n[Software System]")
 
-    satellite_acs -- "Sends telemetry streams" --> safeacs
-    safeacs -- "Sends verified control adjustments" --> satellite_acs
-    safeacs -- "Requests heuristic analysis" --> claude_api
-    claude_api -- "Returns anomaly detection results" --> safeacs
-    operator -- "Approves/Rejects Type 1 Actions" --> safeacs
+    satellite_acs --->|"Sends telemetry streams"| safeacs
+    safeacs --->|"Sends verified control adjustments"| satellite_acs
+    safeacs --->|"Requests heuristic analysis"| claude_api
+    claude_api --->|"Returns anomaly detection results"| safeacs
+    operator --->|"Approves/Rejects Type 1 Actions"| safeacs
     
     classDef person fill:#08427b,color:#fff,stroke:#052e56
     classDef system fill:#1168bd,color:#fff,stroke:#0b4884
@@ -33,27 +31,31 @@ flowchart TD
 
 ### Container Level
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph jetson_orin [NVIDIA Jetson Orin Nano / Edge Node]
+        direction TB
         telemetry_gateway("API Gateway / Receiver\n[Container: Python]")
         guardrail_layer("Deterministic Guardrails\n[Container: Pydantic / Python]")
         decision_router("Decision Protocol Router\n[Container: Python]")
         audit_logger("DR-AIS Logging Engine\n[Container: Python]")
+        
+        telemetry_gateway --->|"Parsed Telemetry"| guardrail_layer
+        guardrail_layer --->|"Validated State"| decision_router
+        decision_router --->|"Action Verification"| guardrail_layer
+        decision_router --->|"Records State & Decision"| audit_logger
     end
 
     claude_api["Claude API (Cloud)\n[External System]"]
     sim_engine["Synthetic ACS\n[External System]"]
     ui["Streamlit Dashboard\n[External System]"]
 
-    sim_engine -- "Raw State (JSON)" --> telemetry_gateway
-    telemetry_gateway -- "Parsed Telemetry" --> guardrail_layer
-    guardrail_layer -- "Validated State" --> decision_router
-    decision_router -- "Context Prompt (if valid)" --> claude_api
-    claude_api -- "Proposed Action" --> decision_router
-    decision_router -- "Action Verification" --> guardrail_layer
-    guardrail_layer -- "Authorized Command (Type 2)" --> sim_engine
-    decision_router -- "Requires Approval (Type 1)" --> ui
-    decision_router -- "Records State & Decision" --> audit_logger
+    sim_engine --->|"Raw State (JSON)"| telemetry_gateway
+    guardrail_layer --->|"Authorized Command<br>(Type 2)"| sim_engine
+    
+    decision_router --->|"Context Prompt<br>(if valid)"| claude_api
+    claude_api --->|"Proposed Action"| decision_router
+    
+    decision_router --->|"Requires Approval<br>(Type 1)"| ui
 
     classDef container fill:#438dd5,color:#fff,stroke:#3c7fc0
     classDef ext_system fill:#999999,color:#fff,stroke:#8a8a8a
