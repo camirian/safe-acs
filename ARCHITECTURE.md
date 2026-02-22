@@ -100,9 +100,11 @@ sequenceDiagram
     Edge->>Edge: Evaluate Constraint (Attribute Usage: RPM ≤ 6000)
     
     alt if [RPM > 6000] (Fatal Violation)
+        Note right of Edge: TOP OPERAND executes<br/>Guard [RPM > 6000] = TRUE<br/>Constraint violated. Hardware at risk.
         Edge-->>Sim: Return: Immediate Safe-Mode PID Override
         Edge->>Log: Signal: Record Constraint Violation
     else else [RPM ≤ 6000] (Nominal State)
+        Note right of Edge: BOTTOM OPERAND executes<br/>Guard [RPM > 6000] = FALSE<br/>Constraint satisfied. Proceed to AI layer.
         Edge->>Router: Signal: Pass State to AI Router
     end
     
@@ -112,13 +114,16 @@ sequenceDiagram
     Router->>Edge: Evaluate Constraint (Proposed Action vs Attribute Bounds)
     
     alt if [Action out-of-bounds]
+        Note right of Edge: TOP OPERAND executes<br/>LLM proposed action exceeds structural limits.<br/>Action rejected. Violation logged.
         Edge-->>Router: Return: Reject Action
         Router->>Log: Signal: Record LLM Hallucination/Violation
     else else [Action within bounds]
         alt if [Type 2: Reversible / Software]
+            Note right of Router: TOP OPERAND executes<br/>Reversible action: autonomous execution permitted.
             Router->>Sim: Signal: Autonomous Actuation
             Router->>Log: Signal: Record Type 2 Success
         else else [Type 1: Irreversible / Hardware]
+            Note right of Router: BOTTOM OPERAND executes<br/>Irreversible action: human approval required.<br/>Claude is blocked from hardware until operator signs off.
             Router->>Human: Signal: Request Cryptographic Approval
             Human-->>Router: Return: Approve Action
             Router->>Sim: Signal: Verified Actuation
@@ -131,9 +136,13 @@ sequenceDiagram
 > - **Participants (Nodes):** Represent architectural **Parts** typed by **PartDefinitions**. The `API & Guardrail`, `Decision Router`, and `DR-AIS Log` constitute the Edge Node boundary.
 > - **Solid Lines (`->>`):** Represent asynchronous **Signal** transmissions passing via **ItemFlows** between parts.
 > - **Dashed Lines (`-->>`):** Represent **Return** messages resulting from a previous invocation or sequence.
-> - **Self-Arrows (Step 2, Step 6):** Represent internal **Behaviors** evaluating a **Constraint** against an **Attribute Usage** (the SysML v2 equivalent of a value property) to determine if structural hardware limits are breached.
-> - **`alt` Blocks:** Represent **Alternative Successions** (conditional `if`/`else` branching within SysML v2 Interactions).
-> - **`[Guards]`:** Boolean expressions evaluated at decision points. For example, if the first guard `[RPM > 6000]` evaluates to false, Steps 3 and 4 are completely bypassed, execution jumps to the `else` succession, and Step 5 is executed.
+> - **Self-Arrows (Step 2, Step 6):** Represent internal **Behaviors** evaluating a **Constraint** against an **Attribute Usage** (the SysML v2 concept for quantifiable part characteristics, e.g. RPM) to determine if structural hardware limits are breached.
+> - **`alt` Blocks:** Represent **Alternative Successions** — conditional `if`/`else` branching within SysML v2 Interactions. Each `alt` block is divided into exactly **two visual operand regions** by a dashed horizontal divider:
+>   - **Top region** → executes when the first guard (shown in the header) evaluates to **True**
+>   - **Bottom region** → executes when the first guard evaluates to **False** (the `else` fallthrough)
+>   - Only **one** region will ever execute per occurrence. The other is completely bypassed.
+> - **`Note` Annotations:** Contextual inline explanations within each operand region, clarifying which guard fired and what the architectural consequence is.
+> - **`[Guards]`:** Boolean expressions evaluated at decision points. Guards are shown in the header of each `alt` region in square brackets (e.g. `[if RPM > 6000]`). If the guard evaluates to False, all steps within that region are skipped and execution falls through to the `else` operand.
 > - **Numbers (`1, 2, 3...`):** Denote the exact, deterministic chronological **Sequence** of execution.
 
 ## SysML v2 to Pydantic Guardrail Mapping
