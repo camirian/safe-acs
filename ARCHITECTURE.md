@@ -89,7 +89,7 @@ sequenceDiagram
     autonumber
     
     participant Sim as Synthetic ACS
-    box rgb(40, 40, 60) Jetson Orin Edge Node
+    box rgba(67, 141, 213, 0.1) Jetson Orin Edge Node
     participant Edge as API & Guardrails
     participant Router as Decision Router
     participant Log as DR-AIS Log
