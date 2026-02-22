@@ -85,6 +85,7 @@ flowchart LR
 To understand how SafeACS handles nominal versus critical AI interventions, trace the execution sequence below. This demonstrates how the deterministic edge strictly bounds the probabilistic LLM.
 
 ```mermaid
+%%{init: { 'themeVariables': { 'altBackground': 'rgba(200, 200, 200, 0.2)', 'altBorder': '#666666'}}}%%
 sequenceDiagram
     autonumber
     
@@ -96,28 +97,28 @@ sequenceDiagram
     participant Human as Flight Operator
     
     Sim->>Edge: Emit Telemetry Signal (ItemFlow)
-    Edge->>Edge: Evaluate Constraint (Value Property: RPM ≤ 6000)
+    Edge->>Edge: Evaluate Constraint (Attribute Usage: RPM ≤ 6000)
     
-    alt Guard: Constraint Violated (Fatal)
+    alt if [RPM > 6000] (Fatal Violation)
         Edge-->>Sim: Return: Immediate Safe-Mode PID Override
         Edge->>Log: Signal: Record Constraint Violation
-    else Guard: Constraint Satisfied
+    else else [RPM ≤ 6000] (Nominal State)
         Edge->>Router: Signal: Pass State to AI Router
     end
     
     Router->>Claude: Signal: Heuristic Context Request
     Claude-->>Router: Return: Proposed Control Action
     
-    Router->>Edge: Evaluate Constraint (Proposed Action vs Bounds)
+    Router->>Edge: Evaluate Constraint (Proposed Action vs Attribute Bounds)
     
-    alt Guard: Action out-of-bounds
+    alt if [Action out-of-bounds]
         Edge-->>Router: Return: Reject Action
         Router->>Log: Signal: Record LLM Hallucination/Violation
-    else Guard: Action within bounds
-        alt Guard: Type 2 (Reversible / Software)
+    else else [Action within bounds]
+        alt if [Type 2: Reversible / Software]
             Router->>Sim: Signal: Autonomous Actuation
             Router->>Log: Signal: Record Type 2 Success
-        else Guard: Type 1 (Irreversible / Hardware)
+        else else [Type 1: Irreversible / Hardware]
             Router->>Human: Signal: Request Cryptographic Approval
             Human-->>Router: Return: Approve Action
             Router->>Sim: Signal: Verified Actuation
@@ -130,12 +131,10 @@ sequenceDiagram
 > - **Participants (Nodes):** Represent architectural **Parts** typed by **PartDefinitions**. The `API & Guardrail`, `Decision Router`, and `DR-AIS Log` constitute the Edge Node boundary.
 > - **Solid Lines (`->>`):** Represent asynchronous **Signal** transmissions passing via **ItemFlows** between parts.
 > - **Dashed Lines (`-->>`):** Represent **Return** messages resulting from a previous invocation or sequence.
-> - **Self-Arrows (Step 2, Step 6):** Represent internal **Behaviors** evaluating a **Constraint** against a part's **Value Property** (e.g., assessing the telemetry's RPM attribute against the structural limit).
-> - **`alt` Blocks:** Represent UML **Alternative** Fragments. Only one path can execute.
-> - **`[Guard: ...]`:** The brackets denote strict Boolean **Guards**. An execution path is only taken if the Guard evaluates to True. 
+> - **Self-Arrows (Step 2, Step 6):** Represent internal **Behaviors** evaluating a **Constraint** against an **Attribute Usage** (the SysML v2 equivalent of a value property) to determine if structural hardware limits are breached.
+> - **`alt` Blocks:** Represent **Alternative Successions** (conditional `if`/`else` branching within SysML v2 Interactions).
+> - **`[Guards]`:** Boolean expressions evaluated at decision points. For example, if the first guard `[RPM > 6000]` evaluates to false, Steps 3 and 4 are completely bypassed, execution jumps to the `else` succession, and Step 5 is executed.
 > - **Numbers (`1, 2, 3...`):** Denote the exact, deterministic chronological **Sequence** of execution.
-> 
-> *Note on Contrast:* The graphical box around the edge node has been removed to ensure the `alt` fragment backgrounds render clearly across all GitHub themes. Claude remains fully isolated from the hardware part (`Synthetic ACS`) via the Edge Node parts.
 
 ## SysML v2 to Pydantic Guardrail Mapping
 
