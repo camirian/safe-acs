@@ -153,17 +153,17 @@ sequenceDiagram
 
 **Architecture Mapping Flow:**
 ```mermaid
-graph TD
-    A[SysML v2 Property Block] -->|Continuous Export| B(AST / JSON Schema definition)
+graph LR
+    A[SysML v2 Property Block] -->|Continuous Export| B(AST / JSON Schema)
     B -->|Code Generator Pipeline| C{Pydantic Model Factory}
     C -->|Output| D[Edge Guardrail Models]
-    
-    subgraph Compiled Artifact Example
-    D1[class MomentumWheelState BaseMod:]
-    D2[max_rpm: int = Field le=6000]
-    D1 --- D2
-    end
     D --> D1
+
+    subgraph Compiled Artifact Example
+        D1["class MomentumWheelState:"]
+        D2["  max_rpm: int = Field(le=6000)"]
+        D1 --- D2
+    end
 ```
 **Mechanism:** 
 If systems engineering parameters change (e.g., maximum momentum wheel limit from `6000` to `5500` RPM), the CI/CD pipeline immediately regenerates the edge Pydantic guardrail. The LLM is mathematically incapable of issuing a command outside this deterministic bound that reaches the hardware.
