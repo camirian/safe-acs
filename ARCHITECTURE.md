@@ -8,11 +8,11 @@ The Cyber-Physical AI Assurance Framework (SafeACS) integrates Anthropic's steer
 ### Context Level
 ```mermaid
 flowchart LR
-    operator(("Flight Operator / Verifier\n[Person]"))
-    satellite_acs["Satellite ACS (Sim)\n[Software System]"]
-    claude_api["Claude API\n[Software System]"]
+    operator(("Flight Operator / Verifier<br>[Person]"))
+    satellite_acs["Satellite ACS (Sim)<br>[Software System]"]
+    claude_api["Claude API<br>[Software System]"]
     
-    safeacs("SafeACS AI Assurance Framework\n[Software System]")
+    safeacs("SafeACS AI Assurance Framework<br>[Software System]")
 
     satellite_acs --->|"Sends telemetry streams"| safeacs
     safeacs --->|"Sends verified control adjustments"| satellite_acs
@@ -34,10 +34,10 @@ flowchart LR
 flowchart LR
     subgraph jetson_orin [NVIDIA Jetson Orin Nano / Edge Node]
         direction TB
-        telemetry_gateway("API Gateway / Receiver\n[Container: Python]")
-        guardrail_layer("Deterministic Guardrails\n[Container: Pydantic / Python]")
-        decision_router("Decision Protocol Router\n[Container: Python]")
-        audit_logger("DR-AIS Logging Engine\n[Container: Python]")
+        telemetry_gateway("API Gateway / Receiver<br>[Container: Python]")
+        guardrail_layer("Deterministic Guardrails<br>[Container: Pydantic / Python]")
+        decision_router("Decision Protocol Router<br>[Container: Python]")
+        audit_logger("DR-AIS Logging Engine<br>[Container: Python]")
         
         telemetry_gateway --->|"Parsed Telemetry"| guardrail_layer
         guardrail_layer --->|"Validated State"| decision_router
@@ -45,9 +45,9 @@ flowchart LR
         decision_router --->|"Records State & Decision"| audit_logger
     end
 
-    claude_api["Claude API (Cloud)\n[External System]"]
-    sim_engine["Synthetic ACS\n[External System]"]
-    ui["Streamlit Dashboard\n[External System]"]
+    claude_api["Claude API (Cloud)<br>[External System]"]
+    sim_engine["Synthetic ACS<br>[External System]"]
+    ui["Streamlit Dashboard<br>[External System]"]
 
     sim_engine --->|"Raw State (JSON)"| telemetry_gateway
     guardrail_layer --->|"Authorized Command<br>(Type 2)"| sim_engine
