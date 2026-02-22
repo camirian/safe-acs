@@ -1,5 +1,9 @@
 # HAZARDS.md (Risk Register & Hazard Analysis)
 
+> [!CAUTION]
+> **MIL-STD-882 System Safety Directive:**
+> The following table defines the core Catastrophic and Critical hazards introduced by bounding probabilistic AI heuristics within a cyber-physical control loop. By design, no LLM output is trusted; the "Deterministic Edge Mitigation" explicitly acts as the final arbiter before any electrical pulse reaches the 3-axis Satellite Attitude Control System hardware. Residual risk must remain strictly at **Low**.
+
 | Hazard ID | Hazard Description                                                                                         | Severity     | Likelihood | Deterministic Edge Mitigation                                                                             | Residual Risk |
 | :-------- | :--------------------------------------------------------------------------------------------------------- | :----------- | :--------- | :-------------------------------------------------------------------------------------------------------- | :------------ |
 | HZ-001    | LLM commands momentum wheel RPM above structural limits (6000 RPM) causing physical disintegration.        | Catastrophic | Occasional | Pydantic constraint `<Field(le=6000)>`. Drop command immediately, default to safe state.                  | Low           |

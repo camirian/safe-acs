@@ -1,5 +1,9 @@
 # Requirements Traceability Matrix (RTM)
 
+> [!IMPORTANT]
+> **DO-178C Traceability Mandate:**
+> Every line of code in the SafeACS edge gateway exists strictly to satisfy a derived system requirement mapping directly back to an immutable Stakeholder (Flight Operator / Auditor) necessity. This matrix establishes the bidirectional traceability necessary to prove *Innocuity*, *Correctness*, and *Intent*.
+
 | Req ID | Stakeholder Requirement                                                                     | Derived System Requirement                                                                      | Verification Method                  | Status  |
 | :----- | :------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------- | :----------------------------------- | :------ |
 | SR-101 | System must never exceed hardware thermal or kinetic limits regardless of AI command.       | Edge node shall check all LLM RPM commands against SysML constraints (`< 6000 RPM`).            | Automated Property-Based Test        | Defined |

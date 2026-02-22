@@ -3,9 +3,13 @@
 ## Executive Summary
 The Cyber-Physical AI Assurance Framework (SafeACS) integrates Anthropic's steerable AI models (Claude) with mission-critical cyber-physical systems via an NVIDIA Jetson Orin Nano edge-compute node. Designed to operate within zero-requirements-drift aerospace constraints, SafeACS enforces deterministic safety boundaries using auto-generated Pydantic guardrails derived directly from SysML v2 property blocks. This architecture ensures all heuristic anomalies detected by Claude are verified against hard structural limits in under 50ms at the edge, maintaining absolute safety, bidirectionally traceable compliance, and auditable proof of innocence before any control action reaches the Satellite Attitude Control System.
 
-## C4 Model Diagrams
+## C4 Model Architecture Topologies
 
-### Context Level
+> [!NOTE] 
+> **How to Read these Diagrams:**
+> These diagrams represent **Data Flow & Structural Boundary Enforcement Topologies**, not state machines. They map the left-to-right flow of physical telemetry data as it passes through deterministic edge constraints, gets analyzed by a probabilistic heuristic engine (Claude), and is finally routed as a verified control action. Follow the directional arrows `--->` to trace the blast radius of any given signal.
+
+### Context Level (Macro System Boundaries)
 ```mermaid
 flowchart LR
     operator(("Flight Operator / Verifier<br>[Person]"))
@@ -28,8 +32,13 @@ flowchart LR
     class safeacs system
     class satellite_acs,claude_api ext_system
 ```
+> **Interpretation (Context Level):**
+> 1. Raw synthetic state data originates on the left (`Satellite ACS`).
+> 2. It hits the `SafeACS` boundary where structural sanity checks occur.
+> 3. `SafeACS` offloads anomaly detection to the `Claude API` (right).
+> 4. If the LLM proposes an irreversible action, `SafeACS` halts and demands manual `Flight Operator` clearance.
 
-### Container Level
+### Container Level (Edge Execution Engine)
 ```mermaid
 flowchart LR
     subgraph jetson_orin [NVIDIA Jetson Orin Nano / Edge Node]
@@ -65,10 +74,17 @@ flowchart LR
     class claude_api,sim_engine,ui ext_system
     class jetson_orin boundary
 ```
+> **Interpretation (Container Level):**
+> This isolates the NVIDIA Jetson Orin Edge Node logic.
+> 1. **Signal Ingestion:** Telemetry enters the `API Gateway`.
+> 2. **The Hard Boundary:** It immediately passes through `Deterministic Guardrails` (Pydantic constraints compiled from SysML). This is the zero-drift barrier.
+> 3. **The Heuristic Pathway:** Valid data is routed by the `Decision Protocol Router` to the `Claude API` for context-aware inference.
+> 4. **Bimodal Actuation:** Claude returns a proposed action. The router validates it against the Guardrails again. Reversible actions (Type 2) are passed to the hardware; irreversible actions (Type 1) require UI approval. All state is committed to the `DR-AIS` immutable log.
 
 ## SysML v2 to Pydantic Guardrail Mapping
-**Concept:**
-Structural constraints defined in Model-Based Systems Engineering (MBSE) tools via SysML v2 are directly compiled into runtime Pydantic models. This guarantees zero requirement drift.
+
+> [!IMPORTANT]
+> **The Zero-Drift Principle:** Structural constraints defined in Model-Based Systems Engineering (MBSE) tools via SysML v2 are directly and automatically compiled into runtime Pydantic models. This guarantees absolute zero-requirement drift between the physics model and the executing code.
 
 **Architecture Mapping Flow:**
 ```mermaid

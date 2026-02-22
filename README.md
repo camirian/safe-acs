@@ -18,6 +18,20 @@ Successfully architecting and simulating this framework demonstrates core compet
 
 ---
 
+## 🧠 Architectural Philosophy: Bounding the Probabilistic
+
+Frontier LLMs operate as probabilistic heuristic engines; they excel at generalizing across vast state spaces to detect anomalies that traditional PID loops or static edge limits miss. However, they lack mathematical guarantees of correctness. 
+
+SafeACS reverses the standard AI paradigm: **We do not trust the LLM.**
+
+Instead, the framework establishes a bimodal execution topology:
+1. **The Core Physics (The Bound):** Deterministic Pydantic guardrails, automatically compiled from SysML v2 property blocks, run locally on an edge node. These act as the immutable laws of physics for the system—they mathematically guarantee the hardware (e.g., a Momentum Reaction Wheel) will never exceed its structural tolerance bounds, regardless of the prompt output.
+2. **The Cognitive Layer (The Heuristic):** Anthropic's Steerable AI operates *inside* this deterministic bound, acting as a high-level cognitive observer. It flags anomalies and proposes optimizations, which are then ruthlessly filtered by the edge guardrail before actuation.
+
+This separation of concerns mathematically guarantees system safety while maximizing cognitive ROI.
+
+---
+
 ## 🛠️ Software Stack & Key Tools
 
 | Component                    | Version / Type          | Purpose                                                    |
