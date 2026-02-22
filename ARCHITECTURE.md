@@ -7,46 +7,61 @@ The Cyber-Physical AI Assurance Framework (SafeACS) integrates Anthropic's steer
 
 ### Context Level
 ```mermaid
-C4Context
-    title System Context diagram for SafeACS
+flowchart TD
+    subgraph External
+        operator(("Flight Operator / Verifier\n[Person]"))
+        satellite_acs["Satellite ACS (Sim)\n[Software System]"]
+        claude_api["Claude API\n[Software System]"]
+    end
+    
+    safeacs("SafeACS AI Assurance Framework\n[Software System]")
 
-    Person(operator, "Flight Operator / Verifier", "Monitors and approves Type 1 irreversible interventions.")
-    System(safeacs, "SafeACS AI Assurance Framework", "Filters, analyzes, and guards ACS telemetry via LLM heuristics and deterministic edge rules.")
-    System_Ext(satellite_acs, "Satellite ACS (Sim)", "Generates synthetic 3-axis stabilization & gyro telemetry.")
-    System_Ext(claude_api, "Claude API", "Performs heuristic anomaly detection & cognitive analytics.")
-
-    Rel(satellite_acs, safeacs, "Sends telemetry streams")
-    Rel(safeacs, satellite_acs, "Sends verified control adjustments")
-    Rel(safeacs, claude_api, "Requests heuristic analysis")
-    Rel(claude_api, safeacs, "Returns anomaly detection results")
-    Rel(operator, safeacs, "Approves/Rejects Type 1 Actions")
+    satellite_acs -- "Sends telemetry streams" --> safeacs
+    safeacs -- "Sends verified control adjustments" --> satellite_acs
+    safeacs -- "Requests heuristic analysis" --> claude_api
+    claude_api -- "Returns anomaly detection results" --> safeacs
+    operator -- "Approves/Rejects Type 1 Actions" --> safeacs
+    
+    classDef person fill:#08427b,color:#fff,stroke:#052e56
+    classDef system fill:#1168bd,color:#fff,stroke:#0b4884
+    classDef ext_system fill:#999999,color:#fff,stroke:#8a8a8a
+    
+    class operator person
+    class safeacs system
+    class satellite_acs,claude_api ext_system
 ```
 
 ### Container Level
 ```mermaid
-C4Container
-    title Container diagram for SafeACS Edge Node
+flowchart TD
+    subgraph jetson_orin [NVIDIA Jetson Orin Nano / Edge Node]
+        telemetry_gateway("API Gateway / Receiver\n[Container: Python]")
+        guardrail_layer("Deterministic Guardrails\n[Container: Pydantic / Python]")
+        decision_router("Decision Protocol Router\n[Container: Python]")
+        audit_logger("DR-AIS Logging Engine\n[Container: Python]")
+    end
 
-    System_Boundary(jetson_orin, "NVIDIA Jetson Orin Nano (Edge Node)") {
-        Container(telemetry_gateway, "API Gateway / Receiver", "Python", "Ingests 100Hz ACS telemetry.")
-        Container(guardrail_layer, "Deterministic Guardrails", "Pydantic / Python", "Executes strict constraint checks. Derived from SysML v2.")
-        Container(decision_router, "Decision Protocol Router", "Python", "Routes Type 1 and Type 2 actions.")
-        Container(audit_logger, "DR-AIS Logging Engine", "Python", "Immutable blast-radius & telemetry log.")
-    }
+    claude_api["Claude API (Cloud)\n[External System]"]
+    sim_engine["Synthetic ACS\n[External System]"]
+    ui["Streamlit Dashboard\n[External System]"]
 
-    Container_Ext(claude_api, "Claude API (Cloud)", "Anthropic REST", "Heuristic inference engine.")
-    Container_Ext(sim_engine, "Synthetic ACS", "Python", "Generates satellite state and accepts corrections.")
-    Container_Ext(ui, "Streamlit Dashboard", "Python", "Human-in-the-loop validation UI.")
+    sim_engine -- "Raw State (JSON)" --> telemetry_gateway
+    telemetry_gateway -- "Parsed Telemetry" --> guardrail_layer
+    guardrail_layer -- "Validated State" --> decision_router
+    decision_router -- "Context Prompt (if valid)" --> claude_api
+    claude_api -- "Proposed Action" --> decision_router
+    decision_router -- "Action Verification" --> guardrail_layer
+    guardrail_layer -- "Authorized Command (Type 2)" --> sim_engine
+    decision_router -- "Requires Approval (Type 1)" --> ui
+    decision_router -- "Records State & Decision" --> audit_logger
 
-    Rel(sim_engine, telemetry_gateway, "Raw State (JSON)")
-    Rel(telemetry_gateway, guardrail_layer, "Parsed Telemetry")
-    Rel(guardrail_layer, decision_router, "Validated State")
-    Rel(decision_router, claude_api, "Context Prompt (if valid)")
-    Rel(claude_api, decision_router, "Proposed Action")
-    Rel(decision_router, guardrail_layer, "Action Verification")
-    Rel(guardrail_layer, sim_engine, "Authorized Command (Type 2)")
-    Rel(decision_router, ui, "Requires Approval (Type 1)")
-    Rel(decision_router, audit_logger, "Records State & Decision")
+    classDef container fill:#438dd5,color:#fff,stroke:#3c7fc0
+    classDef ext_system fill:#999999,color:#fff,stroke:#8a8a8a
+    classDef boundary fill:none,stroke:#444,stroke-width:2px,stroke-dasharray: 5 5
+    
+    class telemetry_gateway,guardrail_layer,decision_router,audit_logger container
+    class claude_api,sim_engine,ui ext_system
+    class jetson_orin boundary
 ```
 
 ## SysML v2 to Pydantic Guardrail Mapping
