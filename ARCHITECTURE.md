@@ -118,6 +118,7 @@ sequenceDiagram
         Edge-->>Router: Return: Reject Action
         Router->>Log: Signal: Record LLM Hallucination/Violation
     else else [Action within bounds]
+        Note right of Router: BOTTOM OPERAND executes<br/>Guard [Action out-of-bounds] = FALSE<br/>Action within bounds. Proceed to actuation routing.
         alt if [Type 2: Reversible / Software]
             Note right of Router: TOP OPERAND executes<br/>Reversible action: autonomous execution permitted.
             Router->>Sim: Signal: Autonomous Actuation
