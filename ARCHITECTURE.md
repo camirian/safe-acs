@@ -85,7 +85,7 @@ flowchart LR
 To understand how SafeACS handles nominal versus critical AI interventions, trace the execution sequence below. This demonstrates how the deterministic edge strictly bounds the probabilistic LLM.
 
 ```mermaid
-%%{init: {'theme': 'default', 'themeVariables': { 'altBackground': 'rgba(200, 200, 200, 0.2)', 'altBorder': '#333333'}}}%%
+%%{init: {'theme': 'neutral', 'themeVariables': { 'altBackground': 'rgba(230, 230, 230, 0.4)', 'altBorder': '#444444'}}}%%
 sequenceDiagram
     autonumber
     
