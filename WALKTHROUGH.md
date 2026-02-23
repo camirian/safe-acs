@@ -1,96 +1,69 @@
-# SafeACS — Project Walkthrough
+# SafeACS: Cyber-Physical AI Assurance Framework
 
-> **How to read, navigate, and run every part of this project.**  
-> Start here if you are visiting for the first time.
+**Project Walkthrough: How to read, navigate, and demo the repository.**
 
----
+### The Story in One Sentence
 
-## The Story in One Sentence
-
-> We mathematically bounded a probabilistic frontier LLM (Anthropic Claude) inside a safety-critical satellite Attitude Control System — enforcing hard physical limits via SysML v2-derived Pydantic guardrails running locally on an NVIDIA Jetson Orin Nano edge node — so the LLM **cannot** directly harm the hardware, regardless of what it outputs.
-
-This is not a tutorial. This is a reference architecture for building AI systems that comply with aerospace and defense safety standards.
+We mathematically bounded a probabilistic frontier LLM (Anthropic's Claude) inside a safety-critical satellite Attitude Control System (ACS), enforcing hard physical limits via SysML v2-derived Pydantic guardrails running locally on an edge node—guaranteeing the LLM can *never* directly harm the hardware, regardless of its output.
 
 ---
 
-## Recommended Reading Order
+## 📁 Where to Look on GitHub
 
-| Step | File                                                             | Purpose                                                                                 |
-| ---- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| 1    | [`README.md`](./README.md)                                       | Start here. Architectural philosophy: "We do not trust the LLM."                        |
-| 2    | [`ARCHITECTURE.md`](./ARCHITECTURE.md)                           | The full system design: C4 diagrams, SysML v2 Sequence Diagram, Zero-Drift Principle    |
-| 3    | [`HAZARDS.md`](./HAZARDS.md)                                     | MIL-STD-882 hazard register: every identified risk and its deterministic mitigation     |
-| 4    | [`RTM.md`](./RTM.md)                                             | DO-178C Traceability Matrix: every requirement linked to code and a verification method |
-| 5    | [`TASKS.md`](./TASKS.md)                                         | Project roadmap across Phases 1–6                                                       |
-| 6    | [`sim_engine/acs_simulator.py`](./sim_engine/acs_simulator.py)   | The satellite being protected: 3-axis stabilized ACS simulator                          |
-| 7    | [`edge_node/guardrails.py`](./edge_node/guardrails.py)           | The deterministic law: SysML v2 → Pydantic constraints                                  |
-| 8    | [`edge_node/claude_client.py`](./edge_node/claude_client.py)     | Claude's strictly bounded role as a heuristic observer                                  |
-| 9    | [`edge_node/decision_router.py`](./edge_node/decision_router.py) | The bimodal protocol as running code                                                    |
-| 10   | [`verify_phase3.py`](./verify_phase3.py)                         | 7/7 automated verification tests — run this first                                       |
+All work lives at: [github.com/camirian/safe-acs](https://github.com/camirian/safe-acs) (branch: `main`)
 
----
+### Repository Structure at a Glance
 
-## Repository Structure
-
-```
+```text
 safe-acs/
-├── README.md               ← Philosophy and stack overview
-├── ARCHITECTURE.md         ← System design (READ THIS)
-├── HAZARDS.md              ← MIL-STD-882 hazard analysis
-├── RTM.md                  ← DO-178C traceability matrix
-├── TASKS.md                ← Project roadmap
-├── AUDIT.md                ← DR-AIS immutable log specification
+├── README.md              ← Start here. Architecture philosophy.
+├── ARCHITECTURE.md        ← SysML v2 diagrams and the Bimodal Decision Protocol.
+├── HAZARDS.md             ← MIL-STD-882 hazard analysis.
+├── RTM.md                 ← DO-178C Traceability Matrix.
+├── TASKS.md               ← Project roadmap (Phases 1–6).
+├── AUDIT.md               ← DR-AIS audit log specification.
 │
 ├── sim_engine/
-│   └── acs_simulator.py   ← Phase 2: Synthetic ACS telemetry source
+│   └── acs_simulator.py   ← Phase 2: Synthetic ACS telemetry source (The Kinetic-Twin).
 │
-├── edge_node/              ← Phase 3: The guardrail stack
-│   ├── guardrails.py      ← SysML v2 → Pydantic constraint engine
-│   ├── claude_client.py   ← Anthropic API client (tool_use enforced)
-│   └── decision_router.py ← Bimodal decision protocol orchestrator
-│
-└── verify_phase3.py        ← Run this to verify everything works
+└── edge_node/             ← Phase 3: The Deterministic Guardrail Stack.
+    ├── guardrails.py      ← SysML → Pydantic constraint engine.
+    ├── claude_client.py   ← Anthropic tool_use heuristic client.
+    └── decision_router.py ← Bimodal protocol orchestrator.
 ```
 
 ---
 
-## Running the Demo
+## 🚀 The Demo
 
-### Option A — Deterministic guardrails only (no API key required)
+### Option A: Run the Deterministic Verification (Offline)
+
+This 30-second test proves the constraint layer operates independently of the LLM. Claude is never invoked for a fatal hardware violation—the edge node acts immediately.
 
 ```bash
-git clone https://github.com/camirian/safe-acs.git
-cd safe-acs
+# Clone the repo and install dependencies
+git clone https://github.com/camirian/safe-acs.git && cd safe-acs
 pip install pydantic anthropic
 
+# Run the Phase 3 verification (No API key needed)
 python verify_phase3.py
 ```
 
-**Expected output:**
-```
-[PASS] Guardrail: Nominal telemetry passes       | violations=0
-[PASS] Guardrail: Fatal RPM violation detected   | severity=CATASTROPHIC
-[PASS] Guardrail: Angular rate violation detected| violations=1
-[PASS] Guardrail: Quaternion norm violation detected
-[PASS] Router: Nominal returns GUARDRAIL_PASS_LLM_SKIPPED
-[PASS] Router: Fatal RPM returns GUARDRAIL_VIOLATION_FATAL | requires_human=True
-[PASS] LLMAnalysis: Pydantic schema validates correctly
-
-=====================================
-PHASE 3 VERIFICATION: 7/7 TESTS PASSED
-=====================================
-```
-
-This confirms: when Wheel 2 hits 7,500 RPM (structural limit: 6,000), the guardrail catches it immediately, classifies it `CATASTROPHIC`, requires human approval, and **never invokes the LLM**. That is the architectural guarantee.
+**Expected Output:** A 7/7 test pass demonstrating the router catching simulated `CATASTROPHIC` RPM and Angular Rate violations before they can reach the LLM.
 
 ---
 
-### Option B — Full end-to-end with Claude (requires `ANTHROPIC_API_KEY`)
+### Option B: Live End-to-End with Claude
+
+This demonstrates the live **Bimodal Protocol**: nominal frames accumulate silently, but when a subtle drift anomaly is injected, Claude surfaces it with a confidence score and a recommended action.
 
 ```bash
-export ANTHROPIC_API_KEY=your_key_here
+export ANTHROPIC_API_KEY="your_api_key_here"
+```
 
-python -c "
+Save the following as `run_demo.py` and execute with `python run_demo.py`:
+
+```python
 from sim_engine.acs_simulator import ACSSimulator
 from edge_node.decision_router import DecisionRouter
 import time
@@ -98,128 +71,115 @@ import time
 sim = ACSSimulator(frequency_hz=10.0)
 router = DecisionRouter(llm_window_size=10, enable_llm=True)
 
-# Phase A: Nominal telemetry (10 frames)
-print('=== NOMINAL STATE (no LLM dispatch yet) ===')
+print('=== NOMINAL STATE ===')
 for _ in range(10):
     event = router.process(sim.run_step())
     print(f'  [{event.outcome.value}]')
     time.sleep(sim.dt)
 
-# Phase B: Inject a drift anomaly on Wheel 2 (50 RPM/sec drift)
-print('\n=== DRIFT ANOMALY INJECTED ON WHEEL 2 ===')
+print('\n=== INJECTING DRIFT ANOMALY ===')
 sim.inject_anomaly(wheel_index=2, drift_rate_rpm=50.0)
 for _ in range(10):
     event = router.process(sim.run_step())
     if event.llm_analysis:
-        print(f'  anomaly={event.llm_analysis.anomaly_detected} '
-              f'confidence={event.llm_analysis.confidence:.2f} '
-              f'action={event.llm_analysis.recommended_action} '
+        print(f'  [LLM] anomaly={event.llm_analysis.anomaly_detected} | '
+              f'confidence={event.llm_analysis.confidence:.2f} | '
               f'subsystem={event.llm_analysis.affected_subsystem}')
     time.sleep(sim.dt)
-"
 ```
 
-This demonstrates the full bimodal execution cycle: nominal frames accumulate silently through the guardrail, then when the window is dispatched to Claude, the LLM surfaces the monotonic RPM drift as an anomaly — with a confidence score and a proposed action that is still subject to a second guardrail pass before any actuation.
+---
+
+## 🏗️ What Was Built Phase by Phase
+
+### Phase 1 — Architecture Definition (The Iron Frame)
+
+**Goal:** Define the problem with institutional rigor before writing a line of code.
+
+The key design decision: The `ARCHITECTURE.md` sequence diagram is a strict SysML v2 Interaction model. Every element maps to a precise formal construct, ensuring zero-drift from requirements to code.
+
+- **`HAZARDS.md`:** MIL-STD-882 hazard register (HZ-001 through HZ-005).
+- **`RTM.md`:** DO-178C Requirements Traceability Matrix linking every stakeholder need to a verification method.
 
 ---
 
-## What Each Phase Built
+### Phase 2 — Synthetic ACS Simulator (The Kinetic-Twin)
 
-### Phase 1 — Architecture Definition
+**Goal:** Build a physics-faithful telemetry source to test the guardrail stack against.
 
-**Files:** `README.md`, `ARCHITECTURE.md`, `HAZARDS.md`, `RTM.md`, `TASKS.md`, `AUDIT.md`
-
-Defined the full system architecture with institutional rigor before writing implementation code. The architectural centerpiece is the **SysML v2 Sequence Diagram** in `ARCHITECTURE.md`, which maps every diagram element to a formal modeling construct:
-
-- **Participants** → `Parts` typed by `PartDefinitions`
-- **Solid arrows** → `Signal` transmissions via `ItemFlows`
-- **Dashed arrows** → `Return` messages
-- **Self-arrows** → internal `Behaviors` evaluating `Constraints` against `Attribute Usages`
-- **`alt` blocks** → `Alternative Successions` (conditional `if`/`else` branching)
-- **`[Guards]`** → Boolean expressions; the top operand fires when `True`, the bottom when `False`
+- **`sim_engine/acs_simulator.py`:** Simulates a 3-axis stabilized satellite utilizing unit quaternion attitude propagation (Euler integration) and Gaussian sensor noise.
+- **The Breakthrough:** The `inject_anomaly()` method induces controlled RPM micro-drift, creating the exact heuristic failure states the LLM is designed to catch—states that are structurally legal but operationally catastrophic if left undetected.
 
 ---
 
-### Phase 2 — Synthetic ACS Simulator
+### Phase 3 — Edge Node: Deterministic Guardrails & Claude Integration
 
-**File:** `sim_engine/acs_simulator.py`
+**Goal:** Implement the bimodal protocol as production-grade Python.
 
-A physics-faithful 3-axis satellite ACS simulator. Outputs high-frequency JSON telemetry representing:
-- **Unit quaternion attitude** propagated via Euler integration
-- **3-axis angular rates** with Gaussian sensor noise
-- **3x Reaction Wheel RPMs** (nominal ~2000 RPM)
+#### 1. The Constraint Engine (`guardrails.py`)
 
-Key method: `inject_anomaly(wheel_index, drift_rate_rpm)` — induces controlled, gradual RPM drift on any single wheel. This is what triggers the LLM's anomaly detection in the live demo.
-
----
-
-### Phase 3 — Edge Node: Guardrails + Claude Integration
-
-**Files:** `edge_node/guardrails.py`, `edge_node/claude_client.py`, `edge_node/decision_router.py`
-
-The bimodal decision protocol from the sequence diagram, implemented as production-grade Python.
-
-#### `guardrails.py` — The Deterministic Law
-
-Each `Field()` constraint is a 1:1 trace to a SysML v2 `AttributeUsage`:
+This is the compiled output of the SysML v2 MBSE pipeline. Each `Field()` is a direct 1:1 trace to a physical hardware attribute limit:
 
 ```python
 class MomentumWheelStateGuardrail(BaseModel):
     rpm: float = Field(..., ge=-6000.0, le=6000.0)
-    # ↑ SysML v2 AttributeUsage: ReactionWheelAssembly::max_rpm
-    # ↑ MIL-STD-882 HZ-001 Mitigation: structural disintegration above ±6000 RPM
+    # ↑ This Field() IS the SysML v2 AttributeUsage constraint. One-to-one trace.
 ```
 
-Three constraint classes:
-- `MomentumWheelStateGuardrail` → HZ-001 (±6000 RPM)
-- `AngularRateGuardrail` → HZ-002 (±5 deg/s per axis)
-- `QuaternionNormGuardrail` → HZ-005 (|q| ≈ 1.0 ± 0.01)
+Three constraint classes, each tied to a MIL-STD-882 hazard:
 
-#### `claude_client.py` — Claude's Bounded Role
+| Guardrail                     | SysML Source            | Constraint           | HZ Ref |
+| ----------------------------- | ----------------------- | -------------------- | ------ |
+| `MomentumWheelStateGuardrail` | `ReactionWheelAssembly` | `±6000 RPM`          | HZ-001 |
+| `AngularRateGuardrail`        | `Gyroscope`             | `±5 deg/s` per axis  | HZ-002 |
+| `QuaternionNormGuardrail`     | `AttitudeSolution`      | `\|q\| ≈ 1.0 ± 0.01` | HZ-005 |
 
-Claude's compliance is **architectural, not prompt-based**:
+#### 2. The Trust Boundary (`claude_client.py`)
+
+Claude's constraints are **architectural, not prompt-based**. By enforcing Anthropic's Tool Use API, Claude *cannot* return unstructured text:
 
 ```python
 response = self.client.messages.create(
     ...
-    tool_choice={"type": "any"},  # Claude MUST call the tool. No exceptions.
+    tool_choice={"type": "any"},  # Claude MUST call the tool. Free text is forbidden.
 )
 ```
 
-If Claude fails to call `report_anomaly_analysis`, a `RuntimeError` is raised and the decision router routes the situation to a human operator. Claude is not trusted to be cooperative.
+If Claude fails to call `report_anomaly_analysis`, a `RuntimeError` routes the situation to a human operator. The system does not trust the LLM to be cooperative.
 
-#### `decision_router.py` — The Bimodal Orchestrator
+This is the direct implementation of Anthropic's core mission: a steerable, interpretable AI whose behavior is verifiably bounded—not by hope, but by architecture.
 
-Seven possible outcomes per telemetry tick, each emitting a structured `DecisionEvent` for the audit log:
+#### 3. The Bimodal Orchestrator (`decision_router.py`)
 
-| Outcome                            | What Happened                                                  |
-| ---------------------------------- | -------------------------------------------------------------- |
-| `GUARDRAIL_VIOLATION_FATAL`        | Structural limit breached. LLM bypassed. Safe-mode PID active. |
-| `GUARDRAIL_VIOLATION_CRITICAL`     | Limit breached. LLM bypassed. Human alerted.                   |
-| `GUARDRAIL_PASS_LLM_SKIPPED`       | Nominal. Accumulating telemetry window.                        |
-| `GUARDRAIL_PASS_LLM_NOMINAL`       | Nominal. Claude confirmed no anomaly.                          |
-| `GUARDRAIL_PASS_LLM_ANOMALY_TYPE2` | Anomaly detected. Reversible — autonomous actuation.           |
-| `GUARDRAIL_PASS_LLM_ANOMALY_TYPE1` | Anomaly detected. Irreversible — human approval required.      |
-| `LLM_TRUST_BOUNDARY_VIOLATION`     | Claude violated the protocol. Routed to human review.          |
+The router processes every telemetry tick and emits an immutable `DecisionEvent` for the audit log:
 
----
-
-## Standards Compliance Evidence
-
-| Standard            | Where Applied                        | Evidence                                                                           |
-| ------------------- | ------------------------------------ | ---------------------------------------------------------------------------------- |
-| **SysML v2**        | Architecture modeling language       | `ARCHITECTURE.md` — all diagram elements annotated with formal SysML v2 constructs |
-| **MIL-STD-882**     | Hazard severity/probability taxonomy | `HAZARDS.md` — HZ-001 through HZ-005 with mitigations                              |
-| **DO-178C**         | Requirements traceability            | `RTM.md` — stakeholder → derived → verification method                             |
-| **NIST AI RMF 1.0** | AI risk governance                   | `README.md` — trust boundaries and blast-radius auditing                           |
-| **FAA OPA**         | Overarching Properties for AI        | `HAZARDS.md` — LLM trust boundary constraints                                      |
+| Outcome                            | What Happened                                                           |
+| ---------------------------------- | ----------------------------------------------------------------------- |
+| `GUARDRAIL_VIOLATION_FATAL`        | Structural limit breached. LLM bypassed. Safe-mode PID active.          |
+| `GUARDRAIL_VIOLATION_CRITICAL`     | Limit breached. LLM bypassed. Human alerted.                            |
+| `GUARDRAIL_PASS_LLM_SKIPPED`       | Nominal. Accumulating telemetry window.                                 |
+| `GUARDRAIL_PASS_LLM_NOMINAL`       | Nominal. Claude confirmed no anomaly.                                   |
+| `GUARDRAIL_PASS_LLM_ANOMALY_TYPE2` | Anomaly detected. Reversible — autonomous actuation.                    |
+| `GUARDRAIL_PASS_LLM_ANOMALY_TYPE1` | Anomaly detected. Irreversible — human cryptographic approval required. |
+| `LLM_TRUST_BOUNDARY_VIOLATION`     | Claude broke the protocol. Routed to human review.                      |
 
 ---
 
-## What Comes Next
+## 🔍 Evidence of Rigor
 
-| Phase       | Goal                                                                     |
-| ----------- | ------------------------------------------------------------------------ |
-| **Phase 4** | DR-AIS Immutable Logging Router + Statistical Evaluation Harness         |
-| **Phase 5** | Streamlit human-in-the-loop dashboard — Type 1 cryptographic approval UI |
-| **Phase 6** | Open-source packaging and enterprise demo formatting                     |
+| Evidence                         | Where to Find It                              |
+| -------------------------------- | --------------------------------------------- |
+| SysML v2 Terminology             | `ARCHITECTURE.md` (Interpretation block)      |
+| MIL-STD-882 Hazard Register      | `HAZARDS.md`                                  |
+| DO-178C Traceability Matrix      | `RTM.md`                                      |
+| SysML → Pydantic 1:1 Trace       | `edge_node/guardrails.py` (Inline docstrings) |
+| Anthropic `tool_use` Enforcement | `edge_node/claude_client.py`                  |
+| Automated Verification Tests     | `verify_phase3.py` (7/7 Pass Rate)            |
+
+---
+
+## ⏭️ What Comes Next
+
+- **Phase 4:** DR-AIS Immutable Logging Router + Statistical Evaluation Harness.
+- **Phase 5:** Streamlit human-in-the-loop dashboard (Type 1 cryptographic approval UI).
+- **Phase 6:** Open-source packaging and enterprise demo formatting.
