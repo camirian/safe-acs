@@ -2,6 +2,8 @@
 
 **Bounding Probabilistic Frontier AI inside Mission-Critical Cyber-Physical Systems**
 
+> 📖 **New here?** Start with the **[WALKTHROUGH.md](./WALKTHROUGH.md)** — it explains the story, what each file does, and how to run the demo.
+
 This repository contains the architecture, safety analysis, and synthetic simulation environment for SafeACS. It demonstrates how to integrate steerable frontier AI models (Anthropic Claude) within zero-requirements-drift aerospace constraints, enforcing deterministic safety boundaries via auto-generated Pydantic guardrails running on an NVIDIA Jetson Orin Nano edge node.
 
 ---
