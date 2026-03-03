@@ -90,6 +90,43 @@ for _ in range(10):
 
 ---
 
+### Option C: The Human-in-the-Loop Web Dashboard
+
+If you prefer a visual, interactive experience, you can run the enterprise Streamlit dashboard locally.
+
+```bash
+# Run the dashboard on localhost:8501
+streamlit run ui/app.py
+```
+
+The dashboard allows you to:
+- Inject structural FAULTs and heuristic DRIFTs via sidebar buttons.
+- Watch live Pydantic guardrail interceptions.
+- Review and cryptographically approve Claude's Type 1 mitigation requests.
+- Read the DR-AIS JSONL audit ledger in real-time.
+
+---
+
+### Option D: Deploy to Google Cloud Run
+
+To host the SafeACS Mission Control dashboard publicly for zero-friction demonstrations, use the included Dockerfile.
+
+```bash
+# 1. Authenticate with Google Cloud
+gcloud auth login
+gcloud config set project YOUR_PROJECT_ID
+
+# 2. Deploy directly from source to Cloud Run
+gcloud run deploy safe-acs-demo \
+  --source . \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --set-env-vars ANTHROPIC_API_KEY="your_api_key_here" \
+  --port 8080
+```
+
+---
+
 ## 🏗️ What Was Built Phase by Phase
 
 ### Phase 1 — Architecture Definition (The Iron Frame)

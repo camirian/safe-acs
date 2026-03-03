@@ -2,7 +2,18 @@
 
 **Bounding Probabilistic Frontier AI inside Mission-Critical Cyber-Physical Systems**
 
-> 📖 **New here?** Start with the **[WALKTHROUGH.md](./WALKTHROUGH.md)** — it explains the story, what each file does, and how to run the demo.
+> **Breadcrumb Protocol**
+> *   [📖 READ: Walkthrough & Usage Instructions](WALKTHROUGH.md)
+> *   [🏗️ READ: Architectural Build Log](BUILD_LOG.md)
+
+## 🚀 Live Demo
+
+> **[▶ Launch SafeACS Mission Control](https://safe-acs.us-central1.run.app)** — Deployed on Google Cloud Run
+
+[![CI](https://github.com/camirian/safe-acs/actions/workflows/ci.yml/badge.svg)](https://github.com/camirian/safe-acs/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Google Cloud Run](https://img.shields.io/badge/Deployed-Google%20Cloud%20Run-4285F4?logo=googlecloud&logoColor=white)](https://safe-acs.us-central1.run.app)
 
 This repository contains the architecture, safety analysis, and synthetic simulation environment for SafeACS. It demonstrates how to integrate steerable frontier AI models (Anthropic Claude) within zero-requirements-drift aerospace constraints, enforcing deterministic safety boundaries via auto-generated Pydantic guardrails running on an NVIDIA Jetson Orin Nano edge node.
 
