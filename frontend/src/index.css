@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-aerospace-bg: #0b0f19;
+  --color-aerospace-panel: #111827;
+  --color-aerospace-border: #1f2937;
+  --color-aerospace-accent: #3b82f6;
+  --color-fatal: #ef4444;
+  --color-warning: #f59e0b;
+  --color-nominal: #10b981;
+}
+
+body {
+  background-color: var(--color-aerospace-bg);
+  color: #e5e7eb;
+}
