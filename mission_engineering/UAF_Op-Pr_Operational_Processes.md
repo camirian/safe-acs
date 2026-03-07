@@ -14,51 +14,65 @@ For **SafeACS**, this sequence maps the flow of a single telemetry packet from t
 ## Operational Activity Flow (Bimodal Protocol)
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    
-    %% Define Actors / Nodes
-    participant Sat as Space Segment<br/>(Attitude Control System)
-    participant Edge as Edge Segment<br/>(SafeACS Mission Boundary)
-    participant Cloud as Cloud Segment<br/>(Claude LLM)
-    participant Ground as Ground Segment<br/>(Flight Operator)
+flowchart TD
+    classDef space fill:#0b1e36,color:#fff,stroke:#4a90e2,stroke-width:2px;
+    classDef edge fill:#1f2937,color:#fff,stroke:#f59e0b,stroke-width:3px;
+    classDef cloud fill:#450a0a,color:#fff,stroke:#ef4444,stroke-width:2px;
+    classDef ground fill:#1f2937,color:#fff,stroke:#10b981,stroke-width:2px;
+    classDef dec fill:#4a5568,color:#fff,stroke:#94a3b8,stroke-width:2px,shape:diamond;
 
-    %% Operational Sequence
-    Note over Sat,Edge: Phase 1: High-Frequency Ingestion
-    Sat->>Edge: Emit Telemetry Packet (5Hz JSON)
-    
-    Note over Edge: Phase 2: Structural Verification
-    activate Edge
-    Edge->>Edge: Evaluate against SysML v2 Guardrails
-    
-    alt Guardrail Violation (e.g., RPM > 6000)
-        Edge-->>Sat: [Type 0] Hard Actuation Override (Zero-Drift)
-    else Nominal Physics
-        %% Passing nominal data to Claude
-        Note over Edge,Cloud: Phase 3: Probabilistic Evaluation
-        Edge->>Cloud: Forward telemetry context via Tool Use API
-        activate Cloud
-        Cloud-->>Edge: [Tool Invoke] Propose Actuation (Heuristic Anomaly)
-        deactivate Cloud
-        
-        Note over Edge: Phase 4: Bimodal Routing
-        alt Proposes Reversible Action
-            Edge-->>Sat: [Type 2] Autonomous Execution (e.g., Log/Ping)
-        else Proposes Irreversible Action
-            Edge->>Ground: [Type 1] Action Halted. Request Human Approval
-            activate Ground
-            
-            alt Ground Rejects
-                Ground-->>Edge: Cryptographic Deny
-                Edge--xSat: Actuation Dropped
-            else Ground Approves
-                Ground-->>Edge: Cryptographic Sign
-                Edge-->>Sat: [Type 1] Execute Signed Actuation
-            end
-            deactivate Ground
-        end
+    %% Swimlanes
+    subgraph Space_Domain [Space Segment: Attitude Control System]
+        A1(Emit Telemetry Packet:<br/>5Hz JSON):::space
+        A6(Execute Approved Actuation):::space
+        A7(Log Dropped Actuation):::space
+        A8(Execute Hard Override):::space
     end
-    deactivate Edge
+
+    subgraph Assurance_Boundary [Edge Segment: SafeACS Mission Boundary]
+        B1(Ingest Telemetry):::edge
+        B2{Evaluate SysML<br/>Guardrails}:::dec
+        B3(Trigger Zero-Drift Override):::edge
+        B4(Forward Context via Tool API):::edge
+        B5{Determine Action<br/>Reversibility}:::dec
+        B6(Approve Type 2:<br/>Autonomous Execution):::edge
+        B7(Halt Type 1 Action:<br/>Request Approval):::edge
+    end
+
+    subgraph Cloud_Domain [Cloud Segment: Claude LLM]
+        C1(Analyze Heuristic Context):::cloud
+        C2(Propose Actuation<br/>via Tool Invoke):::cloud
+    end
+
+    subgraph Ground_Domain [Ground Segment: Flight Operator]
+        D1{Cryptographic<br/>Review}:::dec
+        D2(Sign Action):::ground
+        D3(Deny Action):::ground
+    end
+
+    %% Activity Flow
+    A1 -->|"Telemetry Stream"| B1
+    B1 --> B2
+    
+    B2 -->|"Violation<br/>(e.g., RPM > 6000)"| B3
+    B3 -->|"Type 0 Mitigation"| A8
+    
+    B2 -->|"Nominal Physics"| B4
+    B4 -->|"API Request"| C1
+    C1 --> C2
+    C2 -->|"Tool Proposal"| B5
+    
+    B5 -->|"Reversible<br/>(e.g., Log/Ping)"| B6
+    B6 --> A6
+    
+    B5 -->|"Irreversible<br/>(e.g., Halt Wheel)"| B7
+    B7 -->|"UI Prompt"| D1
+    
+    D1 -->|"Approved"| D2
+    D2 -->|"Signed Command"| A6
+    
+    D1 -->|"Rejected"| D3
+    D3 -->|"Drop Command"| A7
 ```
 
 ## Traceability to Design Specifications
