@@ -16,7 +16,7 @@ By mapping our solutions via the Unified Architecture Framework (UAF), we provid
 The following views define the operational context and activity flows of the mission:
 
 - **[UAF Op-Co (OV-1): High-Level Operational Concept](UAF_Op-Co_High_Level_Concept.md)**: Illustrates the macro mission environment, the participating nodes, and the security boundaries.
-- **UAF Op-Pr (OV-5b): Operational Processes** *(In Development)*: Details the exact sequence of activities and data exchanges between the Space Segment, Edge Node, and Cloud Logic.
+- **[UAF Op-Pr (OV-5b): Operational Processes](UAF_Op-Pr_Operational_Processes.md)**: Details the exact sequence of activities and Bimodal Protocol data exchanges between the Space Segment, Edge Node, and Cloud Logic.
 
 ---
 *Standards Reference: Unified Architecture Framework (UAF) v1.2 / DoDAF 2.02*
