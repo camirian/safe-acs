@@ -261,7 +261,18 @@ Included a Mermaid diagram (acting as a SysML Block Definition Diagram) visually
 
 ---
 
+### Sprint 2: Deliverable 4 - Hardware Specification
+
+**Goal:** Prove hardware subsystem ownership and environmental engineering knowledge (Claim: CPS_NG_04) by formally specifying the Edge Gateway hardware constraints.
+
+#### 1. Environmental Engineering (MIL-STD-810H / MIL-STD-461)
+Authored `HARDWARE_SPEC.md` detailing the physical survival constraints of the NVIDIA Jetson Orin Nano in a simulated LEO orbital environment. Documented specific mitigation strategies for Thermal (convection vs conduction in a vacuum), Vibration (Launch Vehicle random profiles), and EMI/EMC shielding (protecting the Pydantic RAM states from RF interference).
+
+#### 2. Interface Control Document (ICD)
+Included a formal engineering ICD table defining the exact physical layers (SpaceWire, RS-422, LVDS) and protocols bridging the physical Edge Node to the Reaction Wheels and the SatCom transceivers. 
+
+---
+
 ## ⏭️ What Comes Next
 
-- **Sprint 2: Deliverable 4:** `HARDWARE_SPEC.md` (Claim: CPS_NG_04) - Jetson Orin Nano environmental specifications.
 - **Sprint 2: Deliverable 5:** `/notebooks/telemetry_signal_analysis.ipynb` (Claim: EDU_CSULA_03) - Signal processing & FFT analysis.
