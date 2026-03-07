@@ -24,3 +24,4 @@ eval_results/
 .idea/
 .DS_Store
 logs/
+deploy_*.log
