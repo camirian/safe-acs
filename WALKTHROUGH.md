@@ -234,7 +234,22 @@ Updated `backend/main.py` to forward this `sysml_state` to the React frontend. I
 
 ---
 
+### Sprint 2: Deliverable 2 - UAF Operational Views
+
+**Goal:** Prove Mission Engineering & Digital Thread proficiency by creating standard UAF (Unified Architecture Framework) / DoDAF operational views.
+
+#### 1. Mission Engineering Directory
+Created the `mission_engineering/` directory to house architectural enterprise views. Authored an introductory `README.md` explicitly referencing the **DoD Mission Engineering Guide (MEG)**, which dictates treating the end-to-end mission (securing vulnerable hardware from probabilistic AI) as the system of interest.
+
+#### 2. UAF Op-Co (Operational Concept)
+Authored `mission_engineering/UAF_Op-Co_High_Level_Concept.md`. This represents a UAF Op-Co (the modern equivalent of a DoDAF OV-1). It uses a Mermaid diagram to map the macro environment, separating the Space Segment (Hardware), the Ground Segment (Operator), the Cloud Segment (Claude LLM), and positioning the SafeACS Edge Node precisely on the Mission Assurance Boundary.
+
+#### 3. UAF Op-Pr (Operational Processes)
+Authored `mission_engineering/UAF_Op-Pr_Operational_Processes.md`. This represents a UAF Op-Pr (equivalent to a DoDAF OV-5b). It uses a Mermaid sequence diagram to track the exact Bimodal Protocol activity flow of a telemetry packet. We established robust digital traceability by directly mapping the activities in this sequence diagram to specific requirements in `RTM.md` and hazards in `HAZARDS.md`.
+
+---
+
 ## ⏭️ What Comes Next
 
-- **Sprint 2: Deliverable 2:** `/mission_engineering` UAF Views (Claim: EDU_JHU_04).
-- **Sprint 2: Deliverable 3:** `CDR_RETROSPECTIVE.md` (Claim: CPS_NG_03).
+- **Sprint 2: Deliverable 3:** `CDR_RETROSPECTIVE.md` (Claim: CPS_NG_03) - Systems decomposition methodology.
+- **Sprint 2: Deliverable 4:** `HARDWARE_SPEC.md` (Claim: CPS_NG_04) - Jetson Orin Nano environmental specifications.
