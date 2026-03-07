@@ -1,4 +1,4 @@
-# Citadel Proofing Tasks — `safe-acs`
+# Refactoring & Engineering Tasks — `safe-acs`
 
 > **Sprint 2** — These deliverables close 5 resume gap claims by expanding the scope of this repo.
 

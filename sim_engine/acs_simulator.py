@@ -39,6 +39,7 @@ class ACSTelemetry:
     attitude_q: Quaternion
     angular_rates: AngularRates
     rw_rpms: ReactionWheelsRPM
+    sysml_state: str
 
 class ACSSimulator:
     """
@@ -61,6 +62,9 @@ class ACSSimulator:
             wheel_2=2000.0,
             wheel_3=2000.0
         )
+        
+        # SysML v2 MBSE State
+        self.sysml_state: str = "Nominal"
         
         # Anomaly simulation state (KINETIC-TWIN Element)
         self.anomaly_active: bool = False
@@ -107,7 +111,19 @@ class ACSSimulator:
             elif self.target_anomaly_wheel == 3:
                 self.rw_rpms.wheel_3 += drift_step
                 
-        # 3. Naive kinematic integration for quaternion attitude
+        # 3. SysML v2 Digital Twin State Machine Evaluation
+        max_rpm = max([self.rw_rpms.wheel_1, self.rw_rpms.wheel_2, self.rw_rpms.wheel_3])
+        
+        if max_rpm > 6000.0:
+            self.sysml_state = "Fatal_Fault"
+        elif self.sysml_state == "Fatal_Fault":
+            self.sysml_state = "Safe_Mode"
+        elif max_rpm > 3000.0:
+            self.sysml_state = "Anomaly_Drift"
+        elif max_rpm <= 3000.0 and self.sysml_state in ["Anomaly_Drift", "Safe_Mode"]:
+            self.sysml_state = "Nominal"
+                
+        # 4. Naive kinematic integration for quaternion attitude
         w, x, y, z = self.attitude.w, self.attitude.x, self.attitude.y, self.attitude.z
         wx, wy, wz = self.rates.roll, self.rates.pitch, self.rates.yaw
         
@@ -138,7 +154,8 @@ class ACSSimulator:
             timestamp_ns=time.time_ns(),
             attitude_q=Quaternion(**asdict(self.attitude)),
             angular_rates=AngularRates(**asdict(self.rates)),
-            rw_rpms=ReactionWheelsRPM(**asdict(self.rw_rpms))
+            rw_rpms=ReactionWheelsRPM(**asdict(self.rw_rpms)),
+            sysml_state=self.sysml_state
         )
 
     def generate_telemetry_json(self) -> str:

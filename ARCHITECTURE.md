@@ -3,6 +3,9 @@
 ## Executive Summary
 The Cyber-Physical AI Assurance Framework (SafeACS) integrates Anthropic's steerable AI models (Claude) with mission-critical cyber-physical systems via an NVIDIA Jetson Orin Nano edge-compute node. Designed to operate within zero-requirements-drift aerospace constraints, SafeACS enforces deterministic safety boundaries using auto-generated Pydantic guardrails derived directly from SysML v2 property blocks. This architecture ensures all heuristic anomalies detected by Claude are verified against hard structural limits in under 50ms at the edge, maintaining absolute safety, bidirectionally traceable compliance, and auditable proof of innocence before any control action reaches the Satellite Attitude Control System.
 
+> [!TIP]
+> **Mission Engineering Context:** For high-level operational views (UAF Op-Co/Op-Pr) framing SafeACS as an end-to-end mission solution in accordance with the DoD MEG, see the **[`/mission_engineering`](mission_engineering/README.md)** directory.
+
 ## C4 Model Architecture Topologies
 
 > [!NOTE] 
@@ -172,6 +175,13 @@ If systems engineering parameters change (e.g., maximum momentum wheel limit fro
 - **Synthetic ACS ↔ Jetson Edge:** High-frequency UDP or Local REST. Sending JSON payloads containing Gyro (X,Y,Z), Momentum Wheel RPMs, and Euler angles.
 - **Jetson Edge ↔ Claude API:** Secure HTTPS REST using structured Anthropic Tool Schemas (JSON) bounding LLM outputs.
 - **Jetson Edge ↔ Eval Pipeline:** Log streaming of all prompt/response pairs with edge validation timestamps to calculate cognitive latency and RoCS.
+
+## Digital Twin / MBSE Integration
+SafeACS implements a **Closed-Loop Digital Twin** architecture, mapping MBSE (Model-Based Systems Engineering) artifacts directly to the simulation execution.
+
+1. **SysML v2 Behavioral Model (`models/acs_behavior.sysml`)**: Defines the absolute structural state machine of the Attitude Control System (`Nominal`, `Anomaly_Drift`, `Fatal_Fault`, `Safe_Mode`), governed by explicit property limits (e.g., `rw_rpm_limit = 6000.0`).
+2. **Simulation Execution (`sim_engine/acs_simulator.py`)**: The Kinetic-Twin continuously evaluates these exact SysML guards to derive the `sysml_state`.
+3. **Enterprise Dashboard (`frontend/src/App.tsx`)**: The frontend "SYS STATUS" badge is bound directly to the internally computed `sysml_state`, providing an unbroken digital thread from the systems engineering model to the operator's glass.
 
 ## Compliance Framework Mapping
 | SafeACS Element           | Target Standard           | Justification / Traceability                                                       |

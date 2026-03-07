@@ -60,6 +60,7 @@ class AppState:
         self.inject_fatal: bool = False
         self.inject_drift: bool = False
         self.latest_llm_analysis: dict[str, Any] | None = None
+        self.latest_sysml_state: str = "Nominal"
         
         self.lock = threading.Lock()
 
@@ -84,6 +85,7 @@ def _sim_worker() -> None:
             # 1. Apply Fault Injections
             if state.inject_fatal:
                 state.sim.rw_rpms.wheel_2 = 6500.0
+                state.inject_fatal = False  # Let the simulator auto-recover naturally
             elif state.inject_drift:
                 state.sim.inject_anomaly(wheel_index=3, drift_rate_rpm=100.0)
             else:
@@ -94,6 +96,7 @@ def _sim_worker() -> None:
             # 2. Step Kinetic-Twin
             raw_telemetry = state.sim.run_step()
             raw_dict = json.loads(raw_telemetry)
+            state.latest_sysml_state = raw_dict.get("sysml_state", "Nominal")
             
             # 3. Route through Bimodal Protocol
             t0 = time.perf_counter()
@@ -176,6 +179,7 @@ def get_state() -> dict[str, Any]:
             "latest_event": state.history_events[-1] if state.history_events else None,
             "dr_ais_ledger": list(state.history_events)[-10:], # Last 10
             "llm_analysis": state.latest_llm_analysis,
+            "sysml_state": state.latest_sysml_state,
             "injections": {
                 "fatal": state.inject_fatal,
                 "drift": state.inject_drift

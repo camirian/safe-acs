@@ -215,8 +215,26 @@ The router processes every telemetry tick and emits an immutable `DecisionEvent`
 
 ---
 
+### Sprint 2: Deliverable 1 - Digital Twin Feedback Loop
+
+**Goal:** Implement a closed-loop Digital Twin architecture, mapping a declarative Model-Based Systems Engineering (MBSE) state machine directly to the runtime simulation and frontend UI.
+
+#### 1. The SysML v2 Behavioral Model
+Authored `models/acs_behavior.sysml`, defining the deterministic state boundaries for the Attitude Control System:
+*   `Nominal`: Wheel RPM ≤ 3000
+*   `Anomaly_Drift`: 3000 < Wheel RPM ≤ 6000
+*   `Fatal_Fault`: Wheel RPM > 6000
+*   `Safe_Mode`: Post-fault recovery state.
+
+#### 2. Simulator Integration
+Updated `sim_engine/acs_simulator.py` to evaluate these exact structural boundaries at 5Hz during the physics update loop. The simulator now maintains and emits a `sysml_state` variable within its JSON telemetry stream, eliminating any drift between the engineering model and the executing code.
+
+#### 3. Full-Stack Data Thread
+Updated `backend/main.py` to forward this `sysml_state` to the React frontend. In `frontend/src/App.tsx`, the main "SYS STATUS" badge and its pulse color are now strictly bound to this SysML state, providing an unbroken data thread from the systems model to the operator's dashboard.
+
+---
+
 ## ⏭️ What Comes Next
 
-- **Phase 4:** DR-AIS Immutable Logging Router + Statistical Evaluation Harness.
-- **Phase 5:** Streamlit human-in-the-loop dashboard (Type 1 cryptographic approval UI).
-- **Phase 6:** Open-source packaging and enterprise demo formatting.
+- **Sprint 2: Deliverable 2:** `/mission_engineering` UAF Views (Claim: EDU_JHU_04).
+- **Sprint 2: Deliverable 3:** `CDR_RETROSPECTIVE.md` (Claim: CPS_NG_03).

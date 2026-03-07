@@ -65,10 +65,20 @@ function App() {
   const formatUptime = (s: number) =>
     `${String(Math.floor(s / 3600)).padStart(2, '0')}:${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
-  const isFatalActive = state?.injections?.fatal;
-  const isDriftActive = state?.injections?.drift;
-  const systemStatus = isFatalActive ? 'FAULT' : isDriftActive ? 'ANOMALY' : 'NOMINAL';
-  const statusColor = isFatalActive ? 'text-red-400' : isDriftActive ? 'text-yellow-400' : 'text-emerald-400';
+  const sysmlState = state?.sysml_state || 'Nominal';
+  let systemStatus = 'NOMINAL';
+  let statusColor = 'text-emerald-400';
+
+  if (sysmlState === 'Fatal_Fault') {
+    systemStatus = 'FATAL FAULT';
+    statusColor = 'text-red-400';
+  } else if (sysmlState === 'Anomaly_Drift') {
+    systemStatus = 'ANOMALY DRIFT';
+    statusColor = 'text-yellow-400';
+  } else if (sysmlState === 'Safe_Mode') {
+    systemStatus = 'SAFE MODE';
+    statusColor = 'text-blue-400';
+  }
 
   if (!state) {
     return (
@@ -96,8 +106,8 @@ function App() {
 
         {/* Live Status Bar */}
         <div className="hidden md:flex items-center gap-6 text-xs font-mono">
-          <div className="flex items-center gap-1.5">
-            <Circle className={`w-2 h-2 fill-current ${statusColor} ${systemStatus !== 'NOMINAL' ? 'animate-pulse' : ''}`} />
+          <div className="flex items-center gap-1.5" title={`Driven by SysML Model`}>
+            <Circle className={`w-2 h-2 fill-current ${statusColor} ${sysmlState !== 'Nominal' ? 'animate-pulse' : ''}`} />
             <span className={statusColor}>SYS: {systemStatus}</span>
           </div>
           <div className="text-gray-500">
