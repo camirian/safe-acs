@@ -35,7 +35,7 @@ flowchart TB
     subgraph Cloud_Domain [Cloud Segment: Probabilistic Intelligence]
         direction TB
         Claude[Anthropic Claude API<br/>Heuristic Anomaly Detection]:::threat
-        note_threat>Threat Vector: LLM Hallucination / Poisoning]:::threat
+        note_threat["Threat Vector: LLM Hallucination / Poisoning"]:::threat
     end
 
     subgraph Ground_Domain [Ground Segment: Human-in-the-Loop]
@@ -45,15 +45,15 @@ flowchart TB
     end
 
     %% Operational Exchanges
-    ACS -->|Continuous Telemetry<br/>[High-Frequency JSON]| Jetson
-    Jetson -->|Zero-Drift Verified Commands<br/>[Actuation]| ACS
+    ACS -->|"Continuous Telemetry<br/>[High-Frequency JSON]"| Jetson
+    Jetson -->|"Zero-Drift Verified Commands<br/>[Actuation]"| ACS
     
-    Jetson <-->|Tool Use API Calls<br/>[Heuristic Context]| Claude
+    Jetson <-->|"Tool Use API Calls<br/>[Heuristic Context]"| Claude
     Claude -.- note_threat
     
-    Jetson -->|Irreversible Action Proposed<br/>[Type 1 Mitigation]| Dashboard
-    Dashboard -->|Cryptographic Approval<br/>[Human Override]| Jetson
-    Operator <-->|Monitors & Approves| Dashboard
+    Jetson -->|"Irreversible Action Proposed<br/>[Type 1 Mitigation]"| Dashboard
+    Dashboard -->|"Cryptographic Approval<br/>[Human Override]"| Jetson
+    Operator <-->|"Monitors & Approves"| Dashboard
 
     %% Styling
     class Assurance_Boundary boundary
