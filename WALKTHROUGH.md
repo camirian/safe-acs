@@ -249,7 +249,19 @@ Authored `mission_engineering/UAF_Op-Pr_Operational_Processes.md`. This represen
 
 ---
 
+### Sprint 2: Deliverable 3 - CDR Retrospective
+
+**Goal:** Prove Critical Design Review (CDR) leadership and formal systems decomposition methodology (Claim: CPS_NG_03) by authoring a comprehensive post-mortem of the SafeACS baseline architecture.
+
+#### 1. "V" Model Traceability & Trade-offs
+Authored `CDR_RETROSPECTIVE.md` at the repository root. This document formalizes the engineering process by tracing exactly how stakeholder needs decomposed into functions, and how those functions were structurally allocated to physical and software components. It directly references formal standards (e.g., NASA Systems Engineering Handbook, MIL-STD-499B).
+
+#### 2. SysML Decomposition Tree
+Included a Mermaid diagram (acting as a SysML Block Definition Diagram) visually breaking SafeACS down into its discrete Space, Edge, and Ground configuration items. Additionally, explicitly defended the critical architectural trade-offs (e.g., executing validation at the Edge rather than the Cloud to maintain the Assurance Boundary against adversarial poisoning).
+
+---
+
 ## ⏭️ What Comes Next
 
-- **Sprint 2: Deliverable 3:** `CDR_RETROSPECTIVE.md` (Claim: CPS_NG_03) - Systems decomposition methodology.
 - **Sprint 2: Deliverable 4:** `HARDWARE_SPEC.md` (Claim: CPS_NG_04) - Jetson Orin Nano environmental specifications.
+- **Sprint 2: Deliverable 5:** `/notebooks/telemetry_signal_analysis.ipynb` (Claim: EDU_CSULA_03) - Signal processing & FFT analysis.
