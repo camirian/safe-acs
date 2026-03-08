@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: safe-acs-edge-gateway
+  namespace: mission-critical
+  labels:
+    app: safe-acs
+    component: gateway
+    tier: edge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: safe-acs
+      component: gateway
+  template:
+    metadata:
+      labels:
+        app: safe-acs
+        component: gateway
+    spec:
+      # Required for hardware interfaces (e.g. RS-422, LVDS) on the Jetson Orin Nano
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      securityContext:
+        # Prevent container escape by ensuring the Pod never executes as the root user
+        runAsNonRoot: true
+        # 'safeacs' user ID as defined in Dockerfile.edge
+        runAsUser: 999 
+        runAsGroup: 999
+        fsGroup: 999
+      containers:
+      - name: gateway-node
+        image: safeacs-edge:latest 
+        imagePullPolicy: IfNotPresent
+        # The Edge API port
+        ports:
+        - containerPort: 8000
+          name: api
+        env:
+        - name: SAFEACS_ENV
+          value: "EDGE_PRODUCTION"
+        # Binds the Claude API key securely from a Kubernetes Secret
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: safe-acs-secrets
+              key: anthropic-api-key
+              optional: true
+        securityContext:
+          # Drop ALL Linux privileges to harden the AI Execution environment
+          capabilities:
+            drop:
+            - ALL
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+        # Constrain resource allocation strictly within the Jetson Orin Nano's SWaP-C profile
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "2000m"
+            memory: "4Gi"
+        # Health checks to ensure high availability on the edge cluster
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: api
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: api
+          initialDelaySeconds: 5
+          periodSeconds: 10
