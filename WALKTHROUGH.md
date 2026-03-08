@@ -277,8 +277,10 @@ Included a formal engineering ICD table defining the exact physical layers (Spac
 
 **Goal:** Prove signal processing and systems analysis proficiency (Claim: EDU_CSULA_03) on raw spacecraft telemetry.
 
+> 📓 **[Click here to view the rendered Jupyter Notebook: `telemetry_signal_analysis.ipynb`](./notebooks/telemetry_signal_analysis.ipynb)**
+
 #### 1. Stochastic Telemetry Ingestion
-Created a Jupyter Notebook (`notebooks/telemetry_signal_analysis.ipynb`) that programmatically wraps the `sim_engine/acs_simulator.py`. It generates a high-frequency (10Hz) time-domain signal of the attitude control system's reaction wheels, purposefully injecting a stochastic 2Hz harmonic structural vibration.
+Created a Jupyter Notebook that programmatically wraps the `sim_engine/acs_simulator.py`. It generates a high-frequency (10Hz) time-domain signal of the attitude control system's reaction wheels, purposefully injecting a stochastic 2Hz harmonic structural vibration.
 
 #### 2. FFT Spectral Density & IIR Filtering
 Implemented a Fast Fourier Transform (FFT) using `numpy` and `matplotlib` to convert the time-domain signal into the frequency domain, visually isolating the 2Hz noise spike. Subsequently designed and applied a 4th-order Butterworth Low-Pass filter (via `scipy.signal`) to reject the harmonic noise, proving the ability to successfully increase the Signal-to-Noise Ratio (SNR) before the data hits the deterministic Pydantic guardrails.

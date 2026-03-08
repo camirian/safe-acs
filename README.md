@@ -68,6 +68,7 @@ The foundation of SafeACS is heavily documented, rigorously planned, and bidirec
 - [`TASKS.md`](./TASKS.md): The multi-phase execution strategy for building the framework.
 - [`AUDIT.md`](./AUDIT.md): Self-audit criteria for the project's zero-drift environment.
 - [`sim_engine/acs_simulator.py`](./sim_engine/acs_simulator.py): The Python simulation for generating high-fidelity attitude control telemetry.
+- **[📓 `notebooks/telemetry_signal_analysis.ipynb`](./notebooks/telemetry_signal_analysis.ipynb)**: The Fast Fourier Transform (FFT) and Butterworth filtering demonstration on synthetic ACS telemetry.
 
 ---
 
