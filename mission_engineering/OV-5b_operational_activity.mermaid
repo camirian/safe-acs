@@ -1,0 +1,43 @@
+%% UAF OV-5b Operational Activity Model
+%% Details the bimodal decision protocol executed between Edge Node, LLM, and Ground Station
+flowchart TD
+    classDef edgeExec fill:#1168bd,color:#fff,stroke:#0b4884,stroke-width:2px
+    classDef llmCore fill:#9c27b0,color:#fff,stroke:#7b1fa2,stroke-width:2px
+    classDef operator fill:#2e7d32,color:#fff,stroke:#1b5e20,stroke-width:2px
+    classDef hardware fill:#424242,color:#fff,stroke:#212121,stroke-width:2px
+    classDef decision fill:#ff9800,color:#fff,stroke:#e65100,stroke-width:2px
+
+    Start(("Start (High-Freq Loop)")):::edgeExec
+    
+    A["Acquire Multi-Axis Telemetry"]:::edgeExec
+    B{"Evaluate Pydantic<br>Structural Guards"}:::decision
+    
+    Start --> A
+    A --> B
+    
+    %% Deterministic Fast Path
+    B -->|Violation Detected<br>[Fatal Fault]| C["Execute Pre-Compiled<br>PID Recovery"]:::edgeExec
+    C --> D["Log Deterministic<br>Safing Event"]:::edgeExec
+    D --> E(("Hardware Actuation")):::hardware
+    
+    %% Probabilistic Heuristic Path
+    B -->|State Nominal / Drifting| F["Package State JSON<br>& System Prompt"]:::edgeExec
+    F --> G["Claude Inferencing:<br>Heuristic Anomaly Detection"]:::llmCore
+    
+    G --> H{"Analyze Action<br>Reversibility"}:::decision
+    
+    %% Bimodal Split
+    H -->|Type 2: Reversible| I["Execute Autonomous Mitigation"]:::edgeExec
+    I --> J["Log Action to DR-AIS"]:::edgeExec
+    J --> E
+
+    H -->|Type 1: Irreversible| K["Halt Execution Queue"]:::edgeExec
+    K --> L["Transmit Context & LLM Rationale"]:::operator
+    L --> M{"Operator Verification"}:::decision
+    
+    M -->|Cryptographic Approval| N["Release to Actuation"]:::edgeExec
+    M -->|Reject| O["Log AI Heuristic Failure"]:::edgeExec
+    
+    N --> J
+    O --> End(("End Cycle")):::edgeExec
+    E --> End

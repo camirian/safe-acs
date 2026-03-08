@@ -1,47 +1,34 @@
-# SafeACS Hardware Subsystem Specification
+# Hardware Specification: SafeACS Edge Node
 
-**Configuration Item:** H2 (Edge Assurance Node)  
-**Target Hardware:** NVIDIA Jetson Orin Nano (8GB)  
-**Standard References:** MIL-STD-810H (Environmental), MIL-STD-461G (EMI/EMC)
+**Component:** SafeACS Compute Engine
+**Target Platform:** NVIDIA Jetson Orin Nano (8GB)
+**Domain:** Cyber-Physical Aerospace / Defense Systems
 
-## 1. Executive Summary
-The SafeACS Edge Assurance Node (Configuration Item H2) acts as the deterministic mission assurance boundary between the probabilistic Artificial Intelligence (Cloud) and the physical actuators (Space Vehicle). This document formalizes the hardware specifications, environmental engineering constraints, and physical interface controls required for the Jetson Orin Nano to operate safely in a simulated LEO (Low Earth Orbit) deployment.
+## 1. Subsystem Overview
+The SafeACS Compute Engine acts as the primary deterministic boundary and AI heuristic gateway for mission-critical cyber-physical systems. To guarantee the real-time, 50ms control loop for the Attitude Control System (ACS), the compute node must meet stringent Size, Weight, Power, and Cost (SWaP-C) limitations while surviving hostile mission environments.
 
-## 2. Power and SWaP-C Constraints
-The selection of the NVIDIA Jetson Orin Nano rests fundamentally upon its Size, Weight, Power, and Cost (SWaP-C) profile. 
+## 2. Theoretical SWaP-C Constraints
+*   **Size:** 69.6 mm x 45 mm (SOM footprint)
+*   **Weight:** < 50 grams (compute module only; excluding custom passive heatsink)
+*   **Power (TDP):** Configurable 7W to 15W max.
+    *   *Constraint:* The spacecraft bus allocates a strict 12W budget for the payload compute. The Jetson Orin Nano must be software-constrained (`nvpmodel -m 1`) to the 10W power profile to prevent bus brownouts during active Claude API inferencing/network transmission.
 
-*   **Size:** 69.6 mm x 45 mm (SO-DIMM envelope).
-*   **Weight:** < 50 grams (compute module only).
-*   **Power:** Configurable 7W to 15W TDP.
-    *   *Constraint Mitigation:* The 15W envelope is well within the power budget of a standard 3U to 6U CubeSat EPS (Electrical Power System) while still providing 40 TOPS of AI performance for the Bimodal Decision Protocol routing.
+## 3. Environmental & Mechanical Constraints
 
-## 3. Environmental Engineering (MIL-STD-810H)
-To be certified for flight operations, the Edge Node enclosure and mounting must satisfy rigorous environmental testing profiles.
+### 3.1 Thermal Engineering
+*   **Operating Temperature Range:** -25°C to +90°C (Measured at the Thermal Transfer Plate / TTP).
+*   **Dissipation Strategy:** Conduction cooling only. Active cooling (fans) is strictly prohibited due to mechanical failure rates in vacuum/high-vibration environments. The SOM must be mechanically mated to the chassis structural bulkhead via a custom Aluminum Nitride (AlN) thermal pad to dissipate up to 10W of transient heat load.
 
-### 3.1 Thermal Management (Method 501.7 / 502.7)
-*   **Operating Range (Module):** -25°C to 90°C.
-*   **Space Vacuum Constraint:** Convective cooling (fans) is impossible in orbit. 
-*   **Engineering Solution:** The Jetson module must be thermally coupled to the Space Vehicle's chassis via a highly conductive thermal pad and a custom-machined aluminum heat spreader. Heat is dissipated purely through **conduction** to the spacecraft body and subsequent radiation into deep space.
+### 3.2 Vibration and Shock
+*   **Operational Vibration:** 5 Grms (Random, 10 Hz to 2000 Hz) per MIL-STD-810H Method 514.8.
+*   **Mechanical Shock:** 50 G, 11ms half-sine pulse per MIL-STD-810H Method 516.8 (simulating launch separation pyrotechnics).
+*   *Mitigation:* The 260-pin SO-DIMM connector must be organically staked (using aerospace-grade epoxy like Araldite 2011) post-insertion to prevent catastrophic disconnection during launch kinematics.
 
-### 3.2 Vibration and Shock (Method 514.8 / 516.8)
-*   **Condition:** Launch vehicle ascent exposes the node to extreme random vibration.
-*   **Constraint:** The SO-DIMM edge connector is susceptible to fretting corrosion and dislodgement under high G-forces.
-*   **Engineering Solution:** The compute module must be secured to the carrier board using dual locking standoffs with low-outgassing threadlocker (e.g., Loctite 222). Additionally, the carrier board must be conformal-coated to dampen harmonic resonance across the PCB.
+### 3.3 EMI / EMC (Electromagnetic Interference)
+*   **Standard:** MIL-STD-461G (CE102, RE102, RS103).
+*   **Constraint:** The high-frequency signaling of the Orin Nano's LPDDR5 memory (up to 68 GB/s bandwidth) presents a severe radiated emissions (RE) risk to the spacecraft's S-band communication transceivers.
+*   **Mitigation:** The entire compute module must be enclosed in a Faraday cage (machined aluminum 6061-T6 housing) with specialized RF gaskets on all mating surfaces. All external I/O (Ethernet, Serial) must pass through inline EMI suppression filters before exiting the housing.
 
-### 3.3 EMI / EMC (MIL-STD-461G)
-*   **Condition:** The space environment is subjected to high radiation, and the spacecraft itself generates significant electromagnetic noise (e.g., from the reaction wheels and transceivers).
-*   **Constraint:** Electromagnetic interference could induce bit-flips in the RAM, corrupting the deterministic Pydantic guardrails.
-*   **Engineering Solution:** The entire Edge Node assembly must be housed in an RF-shielded Faraday enclosure. All external wiring harnesses must use shielded twisted pairs.
-
-## 4. Interface Control Document (ICD)
-The following table defines the physical and data link interfaces bridging the Edge Node (H2) to the Space and Ground Segments.
-
-| Interface ID | Connected Element | Physical Layer | Protocol | Data Rate | Purpose |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **IF-01** | ACS Hardware (H1) | RS-422 / LVDS | Custom JSON over Serial | 115200 baud | High-frequency ingestion of raw telemetry from reaction wheels and gyros. |
-| **IF-02** | ACS Hardware (H1) | RS-422 | PWM / DAC | 9600 baud | Transmission of deterministic, zero-drift actuation commands (override signals). |
-| **IF-03** | SatCom Transceiver | SpaceWire / Ethernet | TCP/IP | 10 Mbps+ | Outbound transmission of telemetry to the Ground Station (H3) and the Claude API. |
-| **IF-04** | SatCom Transceiver | SpaceWire / Ethernet | TCP/IP | 10 Mbps+ | Inbound receipt of cryptographic signatures from the human-in-the-loop operator. |
-
-## 5. Architectural Alignment
-This hardware specification directly supports the software architecture defined in `ARCHITECTURE.md`. By constraining the physical hardware to deterministic interfaces (RS-422) and implementing strict EMI shielding, the system guarantees that the auto-generated Pydantic guardrails will execute exactly as defined by the original MBSE SysML models, without physical or electrical degradation.
+### 3.4 Radiation Tolerance (Space Environments)
+*   The Jetson Orin Nano is Commercial Off-The-Shelf (COTS) and is **not** inherently rad-hard.
+*   **Mitigation:** For Low Earth Orbit (LEO) deployment, the module relies on system-level shielding (Al chassis) and architectural fault tolerance. The deterministic SafeACS software architecture assumes Single Event Upsets (SEUs) will corrupt memory. If the deterministic Guardrail process crashes due to a bit-flip, the ACS hardware automatically defaults to the analog safe-mode PID loop until the watchdog timer reboots the Jetson SOM.

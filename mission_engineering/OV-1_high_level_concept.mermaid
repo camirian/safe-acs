@@ -1,0 +1,45 @@
+%% UAF OV-1 High-Level Operational Concept Graphic
+%% Represents the Operational Nodes and their interactions within the SafeACS Mission
+flowchart TD
+    classDef spaceNode fill:#0b1e36,color:#fff,stroke:#4a90e2,stroke-width:2px
+    classDef groundNode fill:#1a2b1f,color:#fff,stroke:#2e7d32,stroke-width:2px
+    classDef aiNode fill:#2d1b36,color:#fff,stroke:#9c27b0,stroke-width:2px
+    classDef threatNode fill:#361111,color:#fff,stroke:#d32f2f,stroke-width:2px
+    classDef edgeLabel fill:none,stroke:none,color:#bbb
+
+    subgraph SpaceDomain ["Space Domain (Orbiting Asset)"]
+        direction TB
+        SatNode["LEO Satellite Platform<br><br>Operational Node:<br>Attitude Control System (ACS)"]:::spaceNode
+        EdgeNode["SafeACS Jetson Orin<br><br>Operational Node:<br>AI Guardian Edge Server"]:::spaceNode
+        
+        SatNode --- Rel1["High-Freq Telemetry"]:::edgeLabel
+        Rel1 --> EdgeNode
+        EdgeNode --- Rel2["Deterministic Control Signals"]:::edgeLabel
+        Rel2 --> SatNode
+    end
+    
+    subgraph CognitiveDomain ["Cloud / Cognitive Domain"]
+        direction TB
+        ClaudeNode["Anthropic Claude<br><br>Operational Node:<br>Probabilistic Heuristic Engine"]:::aiNode
+        
+        EdgeNode --- Rel3["Sanitized State Vectors"]:::edgeLabel
+        Rel3 --> ClaudeNode
+        ClaudeNode --- Rel4["Proposed Mitigation Strategies"]:::edgeLabel
+        Rel4 --> EdgeNode
+    end
+    
+    subgraph GroundDomain ["Ground Segment Domain"]
+        direction TB
+        MissionControl["Ground Station<br><br>Operational Node:<br>Human-in-the-Loop Operators"]:::groundNode
+        
+        EdgeNode --- Rel5["Type 1 Anomaly Alerts"]:::edgeLabel
+        Rel5 --> MissionControl
+        MissionControl --- Rel6["Cryptographic Execution Approval"]:::edgeLabel
+        Rel6 --> EdgeNode
+    end
+
+    subgraph Environment ["Operational Environment"]
+        SpaceWeather["Solar Flare / EMI Event<br><br>Environmental Disturbance"]:::threatNode
+        SpaceWeather --- Rel7["Induces Hardware Faults"]:::edgeLabel
+        Rel7 -.-> SatNode
+    end
