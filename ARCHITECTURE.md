@@ -84,6 +84,19 @@ flowchart LR
 > 3. **The Heuristic Pathway:** Valid data is routed by the `Decision Protocol Router` to the `Claude API` for context-aware inference.
 > 4. **Bimodal Actuation:** Claude returns a proposed action. The router validates it against the Guardrails again. Reversible actions (Type 2) are passed to the hardware; irreversible actions (Type 1) require UI approval. All state is committed to the `DR-AIS` immutable log.
 
+### Bimodal Defense Protocol
+When an anomaly is detected, SafeACS enforces a bimodal action model based on the reversibility of the proposed mitigation:
+- **Type 2 (Action Reversible)**: E.g., Logging, rebooting isolated non-critical software processes. Executed autonomously by the Edge gateway.
+- **Type 1 (Action Irreversible)**: E.g., Shutting down a momentum wheel, firing a thruster. The command is halted at the Edge gateway. SafeACS issues an alert to the human-in-the-loop Ground Station via the `React` dashboard for cryptographic approval.
+
+---
+
+## Deployment Strategy (Dual-Architecture)
+
+SafeACS maintains two distinct containerization pipelines depending on the target environment:
+
+1. **Cloud Native Demo (`Dockerfile`)**: A combined overarching container hosting both the Vite React frontend and the FastAPI backend. Used to reliably demonstrate the full-stack system architecture via Google Cloud Run (x86_64).
+2. **Physical Edge Deployment (`Dockerfile.edge`)**: A hardened, multi-stage, backend-only container optimized specifically for the NVIDIA Jetson Orin Nano (`linux/arm64`). This image drops the React frontend entirely to minimize the SWaP-C footprint and executes strictly as a non-root user to mitigate container escape vulnerabilities.
 ### System Behavior: The Bimodal Decision Protocol
 To understand how SafeACS handles nominal versus critical AI interventions, trace the execution sequence below. This demonstrates how the deterministic edge strictly bounds the probabilistic LLM.
 

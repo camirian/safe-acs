@@ -1,0 +1,65 @@
+# SafeACS Edge Gateway Container
+# Target Architecture: linux/arm64 (NVIDIA Jetson Orin Nano)
+# Description: Minimal footprint, hardened container for edge-deployed Pydantic Guardrails.
+
+# -----------------------------------------------------------------------------
+# Stage 1: Builder (Heavy compilation environment)
+# -----------------------------------------------------------------------------
+FROM python:3.10-slim as builder
+
+# Install system compilation dependencies required for specific scientific wheels on ARM64
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gfortran \
+    libopenblas-dev \
+    liblapack-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment to isolate dependencies
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy and install Python dependencies.
+# We explicitly restrict network fetching of pip cache since this is a built image.
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# -----------------------------------------------------------------------------
+# Stage 2: Runtime (Minimal Edge footprint)
+# -----------------------------------------------------------------------------
+FROM python:3.10-slim
+
+# Set strict environmental variables for the edge context
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    PORT=8000 \
+    # Indicate to internal application logic it is running on the constrained edge node
+    SAFEACS_ENV="EDGE_PRODUCTION" 
+
+# Create a non-root user for security (prevent privilege escalation if the container escapes)
+RUN groupadd -r safeacs && useradd -r -g safeacs safeacs
+
+# Copy over the compiled virtual environment from the builder stage
+COPY --from=builder /opt/venv /opt/venv
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the backend source code into the container
+COPY backend/ ./backend/
+COPY sim_engine/ ./sim_engine/
+COPY models/ ./models/
+
+# Ensure the non-root user owns the running application directory
+RUN chown -R safeacs:safeacs /app
+
+# Switch to the non-root user
+USER safeacs
+
+# Expose the API port
+EXPOSE 8000
+
+# Start the uvicorn server (No reload for production edge nodes)
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
