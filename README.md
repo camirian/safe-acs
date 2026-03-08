@@ -5,6 +5,7 @@
 > **Breadcrumb Protocol**
 > *   [📖 READ: Walkthrough & Usage Instructions](WALKTHROUGH.md)
 > *   [🏗️ READ: Architectural Build Log](BUILD_LOG.md)
+> *   [🗺️ READ: Architectural Roadmap (V2 -> V-N)](ROADMAP.md)
 
 ## 🚀 Live Demo
 
