@@ -16,7 +16,7 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Google Cloud Run](https://img.shields.io/badge/Deployed-Google%20Cloud%20Run-4285F4?logo=googlecloud&logoColor=white)](https://safe-acs-705975127752.us-central1.run.app)
 
-This repository contains the architecture, safety analysis, and synthetic simulation environment for SafeACS. It demonstrates how to integrate steerable frontier AI models (Anthropic Claude) within zero-requirements-drift aerospace constraints, enforcing deterministic safety boundaries via auto-generated Pydantic guardrails running on an NVIDIA Jetson Orin Nano edge node.
+This project contains the architecture, safety analysis, and synthetic simulation environment for SafeACS. It demonstrates how to integrate steerable frontier AI models (Anthropic Claude) within zero-requirements-drift aerospace constraints, enforcing deterministic safety boundaries via auto-generated Pydantic guardrails running on an NVIDIA Jetson Orin Nano edge node.
 
 ---
 
